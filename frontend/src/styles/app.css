@@ -1,0 +1,27 @@
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: "Segoe UI", sans-serif;
+
+  background: #ffffff;
+
+  color: #222;
+}
+
+.navbar {
+  padding: 18px 0;
+}
+
+.btn {
+  border-radius: 12px;
+
+  padding: 12px 28px;
+}
+
+section {
+  padding-top: 90px;
+
+  padding-bottom: 90px;
+}
