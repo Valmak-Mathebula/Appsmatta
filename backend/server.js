@@ -23,9 +23,12 @@ app.use("/api/auth", authRoutes);
 app.use("/api/visitors", visitorRoutes);
 
 app.get("/", (req, res) => {
-  res.json({
+  res.status(200).json({
     success: true,
-    message: "Appsmatta API is running.",
+    application: "AppsMatta API",
+    version: "1.0.0",
+    status: "Running",
+    timestamp: new Date(),
   });
 });
 
