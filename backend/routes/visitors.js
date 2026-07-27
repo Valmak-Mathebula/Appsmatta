@@ -5,7 +5,7 @@ const db = require("../config/db");
 const geoip = require("geoip-lite");
 const UAParser = require("ua-parser-js");
 
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
   const parser = new UAParser(req.headers["user-agent"]);
   const browser = parser.getBrowser();
   const os = parser.getOS();
@@ -66,9 +66,8 @@ router.post("/", (req, res) => {
     )
   `;
 
-  db.query(
-    sql,
-    [
+  try {
+    await db.query(sql, [
       visitor_id,
       ip,
       geo?.country || "",
@@ -86,18 +85,19 @@ router.post("/", (req, res) => {
       landing_page,
       current_page,
       req.headers["user-agent"],
-    ],
-    (err) => {
-      if (err) {
-        console.log(err);
-        return res.status(500).json(err);
-      }
+    ]);
 
-      res.json({
-        success: true,
-      });
-    },
-  );
+    return res.json({
+      success: true,
+    });
+  } catch (err) {
+    console.error("Database Error:", err);
+
+    return res.status(500).json({
+      success: false,
+      message: "Database error",
+    });
+  }
 });
 
 module.exports = router;

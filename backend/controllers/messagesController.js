@@ -1,6 +1,6 @@
 const db = require("../config/db");
 
-exports.createMessage = (req, res) => {
+exports.createMessage = async (req, res) => {
   const {
     name,
     company,
@@ -50,9 +50,8 @@ exports.createMessage = (req, res) => {
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
-  db.query(
-    sql,
-    [
+  try {
+    await db.query(sql, [
       name,
       company,
       email,
@@ -64,22 +63,19 @@ exports.createMessage = (req, res) => {
       message,
       uploadFolder,
       uploadedFiles,
-    ],
-    (err) => {
-      if (err) {
-        console.error(err);
+    ]);
 
-        return res.status(500).json({
-          success: false,
-          message: err.sqlMessage,
-        });
-      }
+    return res.json({
+      success: true,
+      message:
+        "Thank you! Your project has been submitted successfully. We will review your documents and contact you shortly.",
+    });
+  } catch (err) {
+    console.error("Database Error:", err);
 
-      res.json({
-        success: true,
-        message:
-          "Thank you! Your project has been submitted successfully. We will review your documents and contact you shortly.",
-      });
-    },
-  );
+    return res.status(500).json({
+      success: false,
+      message: "An internal database error occurred.",
+    });
+  }
 };

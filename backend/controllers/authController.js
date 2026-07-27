@@ -2,7 +2,7 @@ const db = require("../config/db");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-exports.login = (req, res) => {
+exports.login = async (req, res) => {
   const { email, password } = req.body;
 
   const sql = `
@@ -12,10 +12,8 @@ exports.login = (req, res) => {
     LIMIT 1
   `;
 
-  db.query(sql, [email], async (err, results) => {
-    if (err) {
-      return res.status(500).json(err);
-    }
+  try {
+    const [results] = await db.query(sql, [email]);
 
     if (results.length === 0) {
       return res.status(401).json({
@@ -47,7 +45,7 @@ exports.login = (req, res) => {
       },
     );
 
-    res.json({
+    return res.json({
       success: true,
       token,
       user: {
@@ -57,5 +55,12 @@ exports.login = (req, res) => {
         role: user.role,
       },
     });
-  });
+  } catch (err) {
+    console.error("Database Error:", err);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error.",
+    });
+  }
 };
