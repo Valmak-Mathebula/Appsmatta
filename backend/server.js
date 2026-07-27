@@ -8,6 +8,7 @@ const messageRoutes = require("./routes/messages");
 const leadsRoutes = require("./routes/leads");
 const authRoutes = require("./routes/auth");
 const visitorRoutes = require("./routes/visitors");
+const assessmentRoutes = require("./routes/assessment");
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use("/api/messages", messageRoutes);
 app.use("/api/leads", leadsRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/visitors", visitorRoutes);
+app.use("/api/assessment", assessmentRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).json({
