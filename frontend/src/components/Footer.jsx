@@ -1,3 +1,6 @@
+import { FaWhatsapp } from "react-icons/fa";
+import { whatsappLink, EMAIL } from "../config/business";
+
 function Footer() {
   return (
     <footer className="bg-dark text-white py-5">
@@ -5,12 +8,22 @@ function Footer() {
         <h4 className="fw-bold mb-3">AppsMatta</h4>
 
         <p className="mb-1">
-          Transforming Business Knowledge into Digital Platforms
+          Affordable Websites & Business Web Apps
         </p>
 
         <p className="mb-1">Pretoria, South Africa</p>
 
-        <p className="mb-4">info@appsmatta.com</p>
+        <p className="mb-3">{EMAIL}</p>
+
+        <a
+          href={whatsappLink()}
+          target="_blank"
+          rel="noreferrer"
+          className="btn btn-success mb-4"
+        >
+          <FaWhatsapp className="me-2" />
+          WhatsApp Us
+        </a>
 
         <hr />
 

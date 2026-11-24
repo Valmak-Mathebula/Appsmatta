@@ -7,26 +7,9 @@ const pool = mysql.createPool({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-
-  waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0,
-  enableKeepAlive: true,
-  keepAliveInitialDelay: 0,
 });
 
-// Test the pool when the server starts
-(async () => {
-  try {
-    const connection = await pool.getConnection();
-
-    console.log("✅ Connected to MySQL");
-
-    connection.release();
-  } catch (err) {
-    console.error("❌ Database connection failed:");
-    console.error(err);
-  }
-})();
+console.log("MYSQL POOL CREATED");
 
 module.exports = pool;

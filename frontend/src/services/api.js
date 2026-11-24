@@ -2,6 +2,18 @@ import axios from "axios";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
-export default axios.create({
+const api = axios.create({
   baseURL: API_URL,
 });
+
+// Send the admin login token (if any) with every request
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export { API_URL };
+export default api;

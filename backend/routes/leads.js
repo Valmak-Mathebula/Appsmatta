@@ -2,6 +2,10 @@ const express = require("express");
 const router = express.Router();
 
 const db = require("../config/db");
+const requireAdmin = require("../middleware/auth");
+
+// Every leads route is admin-only
+router.use(requireAdmin);
 
 /*
  * Dashboard statistics

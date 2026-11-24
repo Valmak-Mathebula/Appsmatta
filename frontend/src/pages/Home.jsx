@@ -7,13 +7,28 @@ import Projects from "../components/Projects";
 import FreeAssessment from "../components/FreeAssessment";
 import Transformation from "../components/Transformation";
 import Stats from "../components/Stats";
+import WebHero from "../components/WebHero";
+import WebPackages from "../components/WebPackages";
+import FreeSample from "../components/FreeSample";
+import HostingPlans from "../components/HostingPlans";
+import Footer from "../components/Footer";
 
 function Home() {
   return (
     <>
       <Navbar />
 
-      <Hero />
+      <WebHero />
+
+      <HostingPlans />
+
+      <WebPackages />
+
+      <FreeSample />
+
+      <div id="excel">
+        <Hero />
+      </div>
 
       <Process />
 
@@ -27,6 +42,8 @@ function Home() {
 
       <Projects />
       <FreeAssessment />
+
+      <Footer />
     </>
   );
 }

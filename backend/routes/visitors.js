@@ -5,6 +5,42 @@ const db = require("../config/db");
 const geoip = require("geoip-lite");
 const UAParser = require("ua-parser-js");
 
+/*
+==================================================
+TEST DATABASE CONNECTION
+==================================================
+*/
+
+router.get("/test", async (req, res) => {
+  console.log("VISITOR ROUTE HIT");
+  console.log(process.env.DB_HOST);
+  console.log(process.env.DB_NAME);
+
+  try {
+    console.log("ABOUT TO RUN INSERT");
+    const [rows] = await db.query("SELECT NOW() AS server_time");
+
+    res.json({
+      success: true,
+      database: "Connected",
+      server_time: rows[0].server_time,
+    });
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+/*
+==================================================
+TRACK VISITOR
+==================================================
+*/
+
 router.post("/", async (req, res) => {
   const parser = new UAParser(req.headers["user-agent"]);
   const browser = parser.getBrowser();

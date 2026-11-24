@@ -1,5 +1,10 @@
 import logo from "../images/logo.png";
-import { FaFileExcel, FaCogs, FaDatabase, FaChartLine } from "react-icons/fa";
+import {
+  FaFileExcel,
+  FaCheckCircle,
+  FaCloudUploadAlt,
+  FaChartLine,
+} from "react-icons/fa";
 
 function Hero() {
   return (
@@ -9,6 +14,8 @@ function Hero() {
         minHeight: "92vh",
         display: "flex",
         alignItems: "center",
+        paddingTop: "40px",
+        paddingBottom: "40px",
       }}
     >
       <div className="container">
@@ -16,8 +23,8 @@ function Hero() {
           {/* LEFT */}
 
           <div className="col-lg-6">
-            <span className="badge bg-primary px-4 py-3 mb-4">
-              BUSINESS PROCESS DIGITIZATION
+            <span className="badge bg-success px-4 py-2 mb-4">
+              FREE EXCEL WORKBOOK ASSESSMENT
             </span>
 
             <h1
@@ -27,13 +34,11 @@ function Hero() {
                 lineHeight: "1.05",
               }}
             >
-              We Transform
+              Discover What's
               <br />
-              Excel Models
+              Inside Your
               <br />
-              Into Business
-              <br />
-              Applications
+              Excel Workbook
             </h1>
 
             <p
@@ -43,94 +48,130 @@ function Hero() {
                 color: "#666",
               }}
             >
-              We help businesses modernize Excel models, manual workflows,
-              engineering calculations and operational processes into secure,
-              cloud-based applications.
+              Upload your Excel workbook and receive a professional assessment
+              showing workbook complexity, VBA inventory, business risk,
+              modernization readiness and cloud migration opportunities.
             </p>
 
-            <div className="row mb-4">
-              <div className="col-6 mb-3">
-                <div className="d-flex align-items-center">
-                  <FaFileExcel className="text-success me-3" size={26} />
+            <div className="mb-4">
+              <p>
+                <FaCheckCircle className="text-success me-2" />
+                Workbook Inventory
+              </p>
 
-                  <span>Excel Models</span>
-                </div>
-              </div>
+              <p>
+                <FaCheckCircle className="text-success me-2" />
+                Complexity Score
+              </p>
 
-              <div className="col-6 mb-3">
-                <div className="d-flex align-items-center">
-                  <FaCogs className="text-primary me-3" size={26} />
+              <p>
+                <FaCheckCircle className="text-success me-2" />
+                VBA Analysis
+              </p>
 
-                  <span>Business Processes</span>
-                </div>
-              </div>
+              <p>
+                <FaCheckCircle className="text-success me-2" />
+                Business Risk Assessment
+              </p>
 
-              <div className="col-6">
-                <div className="d-flex align-items-center">
-                  <FaDatabase className="text-info me-3" size={26} />
-
-                  <span>Cloud Databases</span>
-                </div>
-              </div>
-
-              <div className="col-6">
-                <div className="d-flex align-items-center">
-                  <FaChartLine className="text-warning me-3" size={26} />
-
-                  <span>Dashboards</span>
-                </div>
-              </div>
+              <p>
+                <FaCheckCircle className="text-success me-2" />
+                Modernization Roadmap
+              </p>
             </div>
 
-            <div className="mt-4">
-              <a href="/contact" className="btn btn-primary btn-lg px-5 me-3">
-                Start Your Project
+            <div className="d-flex flex-wrap gap-3">
+              <a
+                href="/assessment"
+                className="btn btn-success btn-lg px-5 py-3"
+              >
+                <FaCloudUploadAlt className="me-2" />
+                START FREE ASSESSMENT
               </a>
 
-              <a href="/solutions" className="btn btn-outline-dark btn-lg px-5">
-                View Solutions
+              <a
+                href="/services"
+                className="btn btn-outline-primary btn-lg px-5 py-3"
+              >
+                Learn More
               </a>
+            </div>
+
+            <div className="mt-4 text-muted">
+              No credit card required • Secure upload • Results in minutes
             </div>
           </div>
 
           {/* RIGHT */}
 
-          <div className="col-lg-6 text-center">
-            <img
-              src={logo}
-              alt="AppsMatta"
-              className="img-fluid"
+          <div className="col-lg-6 mt-5 mt-lg-0">
+            <div
+              className="shadow-lg rounded-4 p-4 bg-white"
               style={{
                 maxWidth: "520px",
-              }}
-            />
-
-            <div
-              className="shadow-lg bg-white rounded-4 p-4 mt-4 text-start"
-              style={{
-                maxWidth: "450px",
                 margin: "0 auto",
               }}
             >
-              <h5 className="fw-bold mb-3">We Digitize</h5>
+              <div className="text-center mb-4">
+                <img
+                  src={logo}
+                  alt="AppsMatta"
+                  className="img-fluid"
+                  style={{ maxWidth: "220px" }}
+                />
+              </div>
 
-              <ul className="mb-0">
-                <li>Excel Financial Models</li>
+              <h4 className="fw-bold mb-4">AppsMatta Assessment</h4>
 
-                <li>Engineering Calculators</li>
+              <div className="d-flex justify-content-between mb-3">
+                <span>Workbook Complexity</span>
+                <strong>84%</strong>
+              </div>
 
-                <li>Business Workflows</li>
+              <div className="progress mb-4">
+                <div
+                  className="progress-bar bg-danger"
+                  style={{ width: "84%" }}
+                />
+              </div>
 
-                <li>Approval Processes</li>
+              <div className="d-flex justify-content-between mb-2">
+                <span>Worksheets</span>
+                <strong>29</strong>
+              </div>
 
-                <li>Reporting Systems</li>
+              <div className="d-flex justify-content-between mb-2">
+                <span>VBA Modules</span>
+                <strong>16</strong>
+              </div>
 
-                <li>Management Dashboards</li>
+              <div className="d-flex justify-content-between mb-2">
+                <span>Named Ranges</span>
+                <strong>134</strong>
+              </div>
 
-                <li>Mobile Applications</li>
+              <div className="d-flex justify-content-between mb-2">
+                <span>External Links</span>
+                <strong>8</strong>
+              </div>
 
-                <li>Cloud Platforms</li>
-              </ul>
+              <div className="d-flex justify-content-between mb-2">
+                <span>Business Risk</span>
+                <strong className="text-danger">HIGH</strong>
+              </div>
+
+              <div className="d-flex justify-content-between mb-2">
+                <span>Cloud Ready</span>
+                <strong>72%</strong>
+              </div>
+
+              <hr />
+
+              <div className="text-center">
+                <FaFileExcel size={55} className="text-success mb-3" />
+
+                <FaChartLine size={55} className="text-primary ms-4" />
+              </div>
             </div>
           </div>
         </div>

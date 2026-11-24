@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { getDashboardStats, getRecentLeads } from "../../services/dashboard";
+import { getVisitorSummary, formatDuration } from "../../services/analytics";
 
 function Dashboard() {
   const [stats, setStats] = useState({
@@ -11,9 +13,13 @@ function Dashboard() {
   });
 
   const [recentLeads, setRecentLeads] = useState([]);
+  const [visitors, setVisitors] = useState(null);
 
   useEffect(() => {
     loadDashboard();
+    getVisitorSummary(30)
+      .then((d) => setVisitors(d.overall))
+      .catch((err) => console.error(err));
   }, []);
 
   const loadDashboard = async () => {
@@ -70,6 +76,32 @@ function Dashboard() {
                 <h6 className="text-muted">{card.title}</h6>
 
                 <h1 className="fw-bold">{card.value || 0}</h1>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h4 className="fw-bold mb-0">Website Visitors (last 30 days)</h4>
+        <Link to="/admin/visitors" className="btn btn-outline-primary btn-sm">
+          View details per page
+        </Link>
+      </div>
+
+      <div className="row g-4 mb-5">
+        {[
+          { title: "Online now", value: visitors?.online_now ?? 0 },
+          { title: "Unique visitors", value: visitors?.visitors ?? 0 },
+          { title: "Page views", value: visitors?.page_views ?? 0 },
+          { title: "Avg time per page", value: formatDuration(visitors?.avg_seconds_per_page) },
+          { title: "Avg time per visit", value: formatDuration(visitors?.avg_session_seconds) },
+        ].map((c) => (
+          <div className="col-md" key={c.title}>
+            <div className="card border-0 shadow">
+              <div className="card-body">
+                <h6 className="text-muted">{c.title}</h6>
+                <h2 className="fw-bold mb-0">{c.value}</h2>
               </div>
             </div>
           </div>

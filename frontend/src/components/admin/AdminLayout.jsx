@@ -2,6 +2,7 @@ import { Link, Outlet } from "react-router-dom";
 import {
   FaChartPie,
   FaUsers,
+  FaEye,
   FaProjectDiagram,
   FaFileInvoiceDollar,
   FaCog,
@@ -41,6 +42,14 @@ function AdminLayout() {
           >
             <FaUsers className="me-2" />
             Leads
+          </Link>
+
+          <Link
+            to="/admin/visitors"
+            className="btn btn-dark w-100 text-start mb-2"
+          >
+            <FaEye className="me-2" />
+            Visitors
           </Link>
 
           <Link

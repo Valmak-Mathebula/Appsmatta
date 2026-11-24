@@ -41,27 +41,46 @@ function Navbar() {
             </li>
 
             <li className="nav-item">
+              <Link className="nav-link fw-bold text-primary" to="/web-development">
+                Web Development
+              </Link>
+            </li>
+
+            <li className="nav-item">
+              <Link className="nav-link fw-bold text-success" to="/services">
+                Excel Transformation
+              </Link>
+            </li>
+
+            <li className="nav-item">
               <Link className="nav-link" to="/about">
                 About
               </Link>
             </li>
 
-            <li className="nav-item">
-              <Link className="nav-link" to="/services">
+            <li className="nav-item dropdown">
+              <a
+                className="nav-link dropdown-toggle"
+                href="#"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+                onClick={(e) => e.preventDefault()}
+              >
                 Services
-              </Link>
-            </li>
-
-            <li className="nav-item">
-              <Link className="nav-link" to="/industries">
-                Industries
-              </Link>
-            </li>
-
-            <li className="nav-item">
-              <Link className="nav-link" to="/solutions">
-                Solutions
-              </Link>
+              </a>
+              <ul className="dropdown-menu">
+                <li>
+                  <Link className="dropdown-item" to="/web-development">
+                    Web Development
+                  </Link>
+                </li>
+                <li>
+                  <Link className="dropdown-item" to="/services">
+                    Excel Transformation
+                  </Link>
+                </li>
+              </ul>
             </li>
 
             <li className="nav-item">
@@ -90,8 +109,8 @@ function Navbar() {
             {/* Start Project Button */}
 
             <li className="nav-item">
-              <Link className="btn btn-primary px-4" to="/contact">
-                Start a Project
+              <Link className="btn btn-success px-4" to="/web-development#sample">
+                Free Sample
               </Link>
             </li>
           </ul>
