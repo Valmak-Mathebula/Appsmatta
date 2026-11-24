@@ -10,6 +10,7 @@ import Solutions from "./pages/Solutions";
 import Contact from "./pages/Contact";
 import WebDevelopment from "./pages/WebDevelopment";
 import WhatsAppButton from "./components/WhatsAppButton";
+import LocationPrompt from "./components/LocationPrompt";
 import AssessmentPortal from "./pages/AssessmentPortal";
 
 // Admin Pages
@@ -81,6 +82,7 @@ function App() {
       </Routes>
 
       <WhatsAppButton />
+      <LocationPrompt />
     </>
   );
 }

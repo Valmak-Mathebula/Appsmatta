@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getVisitorSummary, formatDuration } from "../../services/analytics";
+import VisitorMap from "../../components/admin/VisitorMap";
 
 const periods = [
   { label: "Today", days: 1 },
@@ -101,6 +102,8 @@ function Visitors() {
           </div>
         ))}
       </div>
+
+      <VisitorMap days={days} />
 
       {/* Daily trend */}
       <div className="card border-0 shadow mb-4">

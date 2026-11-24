@@ -14,3 +14,12 @@ export const formatDuration = (value) => {
   if (m < 60) return `${m}m ${s}s`;
   return `${Math.floor(m / 60)}h ${m % 60}m`;
 };
+
+export const getVisitorLocations = async (days = 30) => {
+  const response = await api.get("/analytics/locations", { params: { days } });
+  return response.data;
+};
+
+export const sendLocation = async (location) => {
+  return api.post("/analytics/location", location);
+};

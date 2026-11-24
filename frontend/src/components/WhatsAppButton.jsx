@@ -1,8 +1,12 @@
+import { useLocation } from "react-router-dom";
 import { FaWhatsapp } from "react-icons/fa";
 import { whatsappLink } from "../config/business";
 
 // Floating button shown on every public page
 function WhatsAppButton() {
+  const { pathname } = useLocation();
+  if (pathname.startsWith("/admin")) return null; // not needed in the admin portal
+
   return (
     <a
       href={whatsappLink()}

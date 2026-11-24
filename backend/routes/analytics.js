@@ -20,6 +20,41 @@ function getIp(req) {
   return ip.replace("::ffff:", "");
 }
 
+const round3 = (n) => Math.round(Number(n) * 1000) / 1000; // ~110 m: suburb level, not a home address
+
+let lastGeocode = 0;
+
+// Turns coordinates into a suburb / town name using OpenStreetMap Nominatim (free, max 1 request per second)
+async function reverseGeocode(lat, lon) {
+  if (Date.now() - lastGeocode < 1100) return {}; // stay within the free-service limit
+  lastGeocode = Date.now();
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 4000);
+
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=14&addressdetails=1&lat=${lat}&lon=${lon}`,
+      {
+        headers: { "User-Agent": "AppsMatta-Analytics/1.0 (info@appsmatta.com)", "Accept-Language": "en" },
+        signal: controller.signal,
+      },
+    );
+    if (!response.ok) return {};
+    const a = (await response.json()).address || {};
+    return {
+      suburb: a.suburb || a.neighbourhood || a.quarter || a.city_district || a.village || "",
+      city: a.city || a.town || a.municipality || a.county || "",
+      region: a.state || "",
+      country: (a.country_code || "").toUpperCase(),
+    };
+  } catch {
+    return {};
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 function referrerHost(referrer) {
   try {
     const host = new URL(referrer).hostname;
@@ -73,6 +108,20 @@ router.post("/view", async (req, res) => {
         parseInt(req.body.screen_height, 10) || null,
       ],
     );
+
+    // Approximate location from the IP address (only stored if we have nothing better yet)
+    if (geo?.ll) {
+      try {
+        await db.query(
+          `INSERT IGNORE INTO visitor_locations
+             (visitor_id, latitude, longitude, city, region, country, source)
+           VALUES (?,?,?,?,?,?, 'ip')`,
+          [visitorId, round3(geo.ll[0]), round3(geo.ll[1]), geo.city || "", geo.region || "", geo.country || ""],
+        );
+      } catch (err) {
+        console.warn("Location table not ready:", err.code || err.message);
+      }
+    }
 
     res.json({ success: true, view_id: result.insertId });
   } catch (err) {
@@ -207,6 +256,125 @@ router.get("/summary", requireAdmin, async (req, res) => {
     });
   } catch (err) {
     console.error("Analytics summary error:", err);
+    res.status(500).json({ success: false, message: "Database error" });
+  }
+});
+
+/*
+==================================================
+SAVE VISITOR LOCATION  (public - only called after the visitor says yes)
+==================================================
+*/
+router.post("/location", async (req, res) => {
+  try {
+    const visitorId = clean(req.body.visitor_id, 64);
+    const lat = Number(req.body.latitude);
+    const lon = Number(req.body.longitude);
+    const accuracy = Math.round(Number(req.body.accuracy)) || null;
+
+    if (!visitorId || !Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) {
+      return res.status(400).json({ success: false });
+    }
+
+    // Only accept locations from visitors who have actually viewed a page
+    const [known] = await db.query("SELECT 1 FROM page_views WHERE visitor_id = ? LIMIT 1", [visitorId]);
+    if (known.length === 0) return res.status(400).json({ success: false });
+
+    // Skip the lookup if we already have a fresh browser location for this visitor
+    const [existing] = await db.query(
+      "SELECT 1 FROM visitor_locations WHERE visitor_id = ? AND source = 'browser' AND updated_at > DATE_SUB(NOW(), INTERVAL 1 DAY)",
+      [visitorId],
+    );
+    if (existing.length > 0) return res.json({ success: true });
+
+    const latR = round3(lat);
+    const lonR = round3(lon);
+    const place = await reverseGeocode(latR, lonR);
+
+    await db.query(
+      `INSERT INTO visitor_locations
+         (visitor_id, latitude, longitude, accuracy_m, suburb, city, region, country, source)
+       VALUES (?,?,?,?,?,?,?,?, 'browser')
+       ON DUPLICATE KEY UPDATE
+         latitude = VALUES(latitude), longitude = VALUES(longitude), accuracy_m = VALUES(accuracy_m),
+         suburb = VALUES(suburb), city = VALUES(city), region = VALUES(region), country = VALUES(country),
+         source = 'browser', updated_at = NOW()`,
+      [visitorId, latR, lonR, accuracy, place.suburb || "", place.city || "", place.region || "", place.country || ""],
+    );
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Analytics location error:", err);
+    res.status(500).json({ success: false });
+  }
+});
+
+/*
+==================================================
+VISITOR MAP DATA  (admin only)
+GET /api/analytics/locations?days=30
+==================================================
+*/
+router.get("/locations", requireAdmin, async (req, res) => {
+  const days = Math.max(0, Math.min(parseInt(req.query.days, 10) || 0, 3650));
+
+  let where = "1=1";
+  let params = [];
+  if (days === 1) {
+    where = `created_at >= DATE_SUB(DATE(DATE_ADD(NOW(), INTERVAL ${TZ_HOURS} HOUR)), INTERVAL ${TZ_HOURS} HOUR)`;
+  } else if (days > 1) {
+    where = "created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)";
+    params = [days];
+  }
+
+  try {
+    const [visitors] = await db.query(
+      `SELECT l.visitor_id, l.latitude, l.longitude, l.accuracy_m, l.suburb, l.city, l.region,
+              l.country, l.source,
+              v.views, v.sessions, v.total_seconds, v.first_seen, v.last_seen,
+              v.device, v.browser, v.operating_system, v.referrer_host
+         FROM visitor_locations l
+         JOIN (
+           SELECT visitor_id,
+                  COUNT(*) AS views,
+                  COUNT(DISTINCT session_id) AS sessions,
+                  SUM(duration_seconds) AS total_seconds,
+                  DATE_FORMAT(DATE_ADD(MIN(created_at), INTERVAL ${TZ_HOURS} HOUR), '%Y-%m-%d %H:%i') AS first_seen,
+                  DATE_FORMAT(DATE_ADD(MAX(created_at), INTERVAL ${TZ_HOURS} HOUR), '%Y-%m-%d %H:%i') AS last_seen,
+                  MAX(device) AS device, MAX(browser) AS browser,
+                  MAX(operating_system) AS operating_system, MAX(referrer_host) AS referrer_host
+             FROM page_views WHERE ${where} GROUP BY visitor_id
+         ) v ON v.visitor_id = l.visitor_id
+        ORDER BY v.last_seen DESC LIMIT 500`,
+      params,
+    );
+
+    let pagesByVisitor = {};
+    if (visitors.length > 0) {
+      const [pages] = await db.query(
+        `SELECT visitor_id, page, COUNT(*) AS views, SUM(duration_seconds) AS seconds
+           FROM page_views
+          WHERE ${where} AND visitor_id IN (?)
+          GROUP BY visitor_id, page ORDER BY views DESC`,
+        [...params, visitors.map((v) => v.visitor_id)],
+      );
+      pages.forEach((p) => {
+        (pagesByVisitor[p.visitor_id] ||= []).push({ page: p.page, views: Number(p.views), seconds: Number(p.seconds) });
+      });
+    }
+
+    const [[missing]] = await db.query(
+      `SELECT COUNT(DISTINCT visitor_id) AS n FROM page_views
+        WHERE ${where} AND visitor_id NOT IN (SELECT visitor_id FROM visitor_locations)`,
+      params,
+    );
+
+    res.json({
+      visitors: visitors.map((v) => ({ ...v, pages: pagesByVisitor[v.visitor_id] || [] })),
+      without_location: Number(missing.n),
+    });
+  } catch (err) {
+    console.error("Analytics locations error:", err);
     res.status(500).json({ success: false, message: "Database error" });
   }
 });
