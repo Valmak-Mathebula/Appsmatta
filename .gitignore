@@ -29,3 +29,9 @@ Thumbs.db
 .cache/
 .vite/
 .sf/
+
+dist/
+dist.zip
+
+dist/
+dist.zip

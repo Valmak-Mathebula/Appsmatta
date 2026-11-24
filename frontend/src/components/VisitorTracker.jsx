@@ -10,13 +10,27 @@ const post = (path, body) =>
     keepalive: true, // lets the final time update go through when the tab closes
   });
 
-const getId = (storage, key) => {
-  let id = storage.getItem(key);
-  if (!id) {
-    id = crypto.randomUUID();
-    storage.setItem(key, id);
+// crypto.randomUUID only exists on https pages, so fall back to a simple generator
+const makeId = () => {
+  try {
+    if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+  } catch {
+    /* fall through */
   }
-  return id;
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
+};
+
+const getId = (storage, key) => {
+  try {
+    let id = storage.getItem(key);
+    if (!id) {
+      id = makeId();
+      storage.setItem(key, id);
+    }
+    return id;
+  } catch {
+    return makeId(); // storage blocked (private mode etc.)
+  }
 };
 
 /*
@@ -28,6 +42,17 @@ function VisitorTracker() {
   const { pathname } = useLocation();
 
   useEffect(() => {
+    try {
+      return startTracking(pathname);
+    } catch (err) {
+      console.warn("Tracking disabled:", err);
+    }
+  }, [pathname]);
+
+  return null;
+}
+
+function startTracking(pathname) {
     if (pathname.startsWith("/admin") || localStorage.getItem("token")) return;
 
     const visitorId = getId(localStorage, "visitor_id");
@@ -35,9 +60,13 @@ function VisitorTracker() {
 
     // Only the first page of a visit carries the referrer
     let referrer = "";
-    if (!sessionStorage.getItem("referrer_sent")) {
-      referrer = document.referrer;
-      sessionStorage.setItem("referrer_sent", "1");
+    try {
+      if (!sessionStorage.getItem("referrer_sent")) {
+        referrer = document.referrer;
+        sessionStorage.setItem("referrer_sent", "1");
+      }
+    } catch {
+      /* ignore */
     }
 
     let viewId = null;
@@ -94,9 +123,6 @@ function VisitorTracker() {
       sendTime(); // final time for the page being left
       cancelled = true;
     };
-  }, [pathname]);
-
-  return null;
 }
 
 export default VisitorTracker;
