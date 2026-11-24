@@ -7,6 +7,31 @@ import { getVisitorLocations, formatDuration } from "../../services/analytics";
 const esc = (value) =>
   String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
+// Map drop-point (pin) drawn as SVG, so no image files are needed
+const pinSvg = (fill, stroke, opacity = 1) => `
+  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="40" viewBox="0 0 28 40"
+       style="filter:drop-shadow(0 2px 2px rgba(0,0,0,.35));opacity:${opacity}">
+    <path d="M14 1C6.6 1 1 6.8 1 14c0 10 13 25 13 25s13-15 13-25C27 6.8 21.4 1 14 1z"
+          fill="${fill}" stroke="${stroke}" stroke-width="1.5"/>
+    <circle cx="14" cy="14" r="5.5" fill="#fff"/>
+  </svg>`;
+
+const preciseIcon = L.divIcon({
+  html: pinSvg("#e11d2e", "#9b0d1a"),
+  className: "",
+  iconSize: [28, 40],
+  iconAnchor: [14, 40], // the tip of the pin sits on the exact point
+  popupAnchor: [0, -36],
+});
+
+const approxIcon = L.divIcon({
+  html: pinSvg("#fd7e14", "#c25e00", 0.8),
+  className: "",
+  iconSize: [28, 40],
+  iconAnchor: [14, 40],
+  popupAnchor: [0, -36],
+});
+
 function popupHtml(v) {
   const place =
     [v.suburb, v.city].filter(Boolean).join(", ") ||
@@ -88,12 +113,10 @@ function VisitorMap({ days }) {
           const isPrecise = v.source === "browser";
           isPrecise ? precise++ : approx++;
 
-          L.circleMarker([lat, lng], {
-            radius: isPrecise ? 9 : 7,
-            color: isPrecise ? "#0a58ca" : "#fd7e14",
-            fillColor: isPrecise ? "#0d6efd" : "#fd7e14",
-            fillOpacity: isPrecise ? 0.85 : 0.35,
-            weight: 2,
+          L.marker([lat, lng], {
+            icon: isPrecise ? preciseIcon : approxIcon,
+            zIndexOffset: isPrecise ? 1000 : 0, // precise pins sit on top
+            title: [v.suburb, v.city].filter(Boolean).join(", "),
           })
             .bindPopup(popupHtml(v), { maxHeight: 320 })
             .addTo(layer);
@@ -122,10 +145,10 @@ function VisitorMap({ days }) {
         <h5 className="mb-0">Where visitors are</h5>
         <div className="small">
           <span className="me-3">
-            <span className="badge rounded-pill" style={{ background: "#0d6efd" }}>&nbsp;</span> Precise ({info.precise})
+            <span dangerouslySetInnerHTML={{ __html: pinSvg("#e11d2e", "#9b0d1a").replace('width="28" height="40"', 'width="14" height="20"') }} /> Precise ({info.precise})
           </span>
           <span className="me-3">
-            <span className="badge rounded-pill" style={{ background: "#fd7e14" }}>&nbsp;</span> Approximate ({info.approx})
+            <span dangerouslySetInnerHTML={{ __html: pinSvg("#fd7e14", "#c25e00", 0.8).replace('width="28" height="40"', 'width="14" height="20"') }} /> Approximate ({info.approx})
           </span>
           {info.missing > 0 && <span className="text-muted">{info.missing} with no location</span>}
         </div>
@@ -135,7 +158,7 @@ function VisitorMap({ days }) {
         <div ref={containerRef} style={{ height: 460, width: "100%", borderRadius: "0 0 .375rem .375rem" }} />
       </div>
       <div className="card-footer bg-white text-muted small">
-        Click a point for the visitor's details. Precise = the visitor allowed their browser to share
+        Click a pin for the visitor's details. Precise = the visitor allowed their browser to share
         their area (suburb/town level). Approximate = estimated from their IP address, which can be
         off by many kilometres.
       </div>
